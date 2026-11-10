@@ -4,11 +4,12 @@
 
 Attackers increasingly install legitimate remote monitoring and management (RMM) software instead of custom malware. It is signed, trusted by antivirus, and blends in with normal IT work, which makes it a favourite for ransomware operators to keep access, move laterally and run commands (MITRE ATT&CK **T1219 Remote Access Software**).
 
+> **Disclaimer:** This is an independent community project. It is not affiliated with, endorsed by, or supported by Wazuh, Inc. "Wazuh" is a trademark of Wazuh, Inc.
+
 Wazuh's default ruleset has no coverage for these tools. This pack adds it: tool-launch detection, DNS lookups to RMM services, and high-confidence behaviour rules for renamed binaries, shells spawned by RMM tools and multiple vendors on one machine. An allowlist keeps your organisation's approved RMM tool quiet.
 
 ![RMM Abuse Detection dashboard in Wazuh](docs/dashboard.png)
 
-> **Disclaimer:** This is an independent community project. It is not affiliated with, endorsed by, or supported by Wazuh, Inc. "Wazuh" is a trademark of Wazuh, Inc.
 
 ---
 
