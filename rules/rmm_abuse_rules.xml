@@ -17,8 +17,21 @@
   <rule id="100900" level="12">
     <if_group>sysmon_event1</if_group>
     <field name="win.eventdata.originalFileName" type="pcre2">(?i)^(anydesk|(teamviewer|teamviewer_service|tv_w32|tv_x64)|screenconnect\.[a-z.]+|ateraagent|(srservice|srmanager|srapp|strwinclt)|rustdesk|(logmein|lmiguardiansvc|logmeinsystray)|client32|aa_v\d+|(rserver3|radmin)|(ultraviewer_desktop|ultraviewer_service)|(supremo|supremoservice|supremohelper)|aeroadmin|(rutserv|rfusclient|rutview)|meshagent|tacticalrmm|ninjarmmagent|action1_agent|(dwagent|dwagsvc)|remoting_host|(tvnserver|winvnc|vncserver)|(simplehelpcustomer|simpleservice))\.exe$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(anydesk|(teamviewer|teamviewer_service|tv_w32|tv_x64)|screenconnect\.[a-z.]+|ateraagent|(srservice|srmanager|srapp|strwinclt)|rustdesk|(logmein|lmiguardiansvc|logmeinsystray)|client32|aa_v\d+|(rserver3|radmin)|(ultraviewer_desktop|ultraviewer_service)|(supremo|supremoservice|supremohelper)|aeroadmin|(rutserv|rfusclient|rutview)|meshagent|tacticalrmm|ninjarmmagent|action1_agent|(dwagent|dwagsvc)|remoting_host|(tvnserver|winvnc|vncserver)|(simplehelpcustomer|simpleservice))\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\[^\\]*(anydesk|teamviewer|tv_w|tv_x|screenconnect|connectwise|splashtop|sr[a-z]|strwinclt|rustdesk|atera|logmein|lmi|netsupport|client32|aa_v|ammyy|radmin|rserver|ultraviewer|supremo|aeroadmin|rutserv|rfusclient|rutview|meshagent|meshcentral|tacticalrmm|ninjarmm|ninjaone|action1|dwagent|dwagsvc|remoting_|vnc|simplehelp|simpleservice)[^\\]*\.exe$</field>
     <description>RMM abuse: renamed remote access tool. $(win.eventdata.originalFileName) is running as $(win.eventdata.image) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+      <id>T1036.003</id>
+    </mitre>
+    <group>rmm_detection,rmm_renamed,</group>
+  </rule>
+
+  <!-- Renamed RMM binary detected by its Product name (AnyDesk and some others ship without an OriginalFileName) -->
+  <rule id="100902" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.product" type="pcre2">(?i)^(anydesk|teamviewer|screenconnect|connectwise control|splashtop|rustdesk|atera|logmein|netsupport|ammyy|radmin|ultraviewer|supremo|aeroadmin|remote utilities|mesh ?(central|agent)|tactical ?rmm|ninja ?(rmm|one)|action1|dw ?(service|agent)|chrome remote desktop|(tight|ultra|real) ?vnc|simplehelp)</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\[^\\]*(anydesk|teamviewer|tv_w|tv_x|screenconnect|connectwise|splashtop|sr[a-z]|strwinclt|rustdesk|atera|logmein|lmi|netsupport|client32|aa_v|ammyy|radmin|rserver|ultraviewer|supremo|aeroadmin|rutserv|rfusclient|rutview|meshagent|meshcentral|tacticalrmm|ninjarmm|ninjaone|action1|dwagent|dwagsvc|remoting_|vnc|simplehelp|simpleservice)[^\\]*\.exe$</field>
+    <description>RMM abuse: renamed remote access tool. $(win.eventdata.product) by $(win.eventdata.company) is running as $(win.eventdata.image) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
       <id>T1036.003</id>
@@ -266,7 +279,7 @@
   <rule id="100940" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)anydesk\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up AnyDesk service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -277,7 +290,7 @@
   <rule id="100941" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)teamviewer\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up TeamViewer service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -288,7 +301,7 @@
   <rule id="100942" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)screenconnect\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up ConnectWise ScreenConnect service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -299,7 +312,7 @@
   <rule id="100943" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)atera\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up Atera service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -310,7 +323,7 @@
   <rule id="100944" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)splashtop\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up Splashtop service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -321,7 +334,7 @@
   <rule id="100945" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)rustdesk\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up RustDesk service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -332,7 +345,7 @@
   <rule id="100946" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)(logmein\.com|logme\.in|logmeinrescue\.com)$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up LogMeIn service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -343,7 +356,7 @@
   <rule id="100947" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)netsupportsoftware\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up NetSupport Manager service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -354,7 +367,7 @@
   <rule id="100948" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)ammyy\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up Ammyy Admin service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -365,7 +378,7 @@
   <rule id="100949" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)radmin\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up Radmin service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -376,7 +389,7 @@
   <rule id="100950" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)ultraviewer\.net$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up UltraViewer service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -387,7 +400,7 @@
   <rule id="100951" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)supremocontrol\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up Supremo service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -398,7 +411,7 @@
   <rule id="100952" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)aeroadmin\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up AeroAdmin service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -409,7 +422,7 @@
   <rule id="100953" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)remoteutilities\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up Remote Utilities service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -420,7 +433,7 @@
   <rule id="100954" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)meshcentral\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up MeshCentral service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -431,7 +444,7 @@
   <rule id="100955" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)(ninjarmm\.com|ninjaone\.com)$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up NinjaOne service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -442,7 +455,7 @@
   <rule id="100956" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)action1\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up Action1 service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -453,7 +466,7 @@
   <rule id="100957" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)dwservice\.net$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up DWService service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -464,7 +477,7 @@
   <rule id="100958" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)^remotedesktop\.google\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up Chrome Remote Desktop service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -475,7 +488,7 @@
   <rule id="100959" level="6">
     <if_group>sysmon_event_22</if_group>
     <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)zohoassist\.com$</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2|mssense|msmpeng|sensendr|sensecncproxy|csfalconservice|sentinelagent|elastic-endpoint|cyserver|taniumclient)\.exe$</field>
     <description>RMM network activity: $(win.eventdata.image) looked up Zoho Assist service $(win.eventdata.queryName) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>
@@ -500,7 +513,7 @@
   <!-- RMM tool started from a user-writable folder (portable or dropped copy) -->
   <rule id="100971" level="10">
     <if_group>rmm_process</if_group>
-    <field name="win.eventdata.image" type="pcre2">(?i)(\\Users\\[^\\]+\\(Downloads|Desktop|Documents|AppData\\Local\\Temp)\\|\\Windows\\Temp\\|\\Users\\Public\\|^[a-z]:\\(Temp|tmp)\\)</field>
+    <field name="win.eventdata.image" type="pcre2">(?i)(\\+Users\\+[^\\]+\\+(Downloads|Desktop|Documents|AppData\\+Local\\+Temp)\\+|\\+Windows\\+Temp\\+|\\+Users\\+Public\\+|^[a-z]:\\+(Temp|tmp)\\+)</field>
     <description>RMM abuse: remote access tool run from a user-writable folder: $(win.eventdata.image) on $(win.system.computer)</description>
     <mitre>
       <id>T1219</id>

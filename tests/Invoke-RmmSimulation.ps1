@@ -14,7 +14,7 @@
     Downloads the official AnyDesk portable client from download.anydesk.com,
     runs it briefly, then closes it. No connection is accepted.
       B1  Real AnyDesk runs and contacts its relays -> 100910 / 100971 and 100940 DNS lookup
-      B2  The same file renamed to svc-update.exe   -> 100900 renamed remote access tool
+      B2  The same file renamed to svc-update.exe   -> 100902 renamed remote access tool
       B3  A simulated TeamViewer starts right after -> 100970 different vendors within 10 minutes
 
   Everything is cleaned up at the end.
@@ -75,7 +75,7 @@ if ($IncludeRealAnyDesk) {
     $p = Start-Process $renamed -PassThru
     Start-Sleep -Seconds 8
     Get-Process -Name 'svc-update' -ErrorAction SilentlyContinue | Stop-Process -Force
-    Expect 100900 'RMM abuse: renamed remote access tool. AnyDesk.exe is running as ...svc-update.exe'
+    Expect 100902 'RMM abuse: renamed remote access tool. AnyDesk by AnyDesk Software GmbH is running as ...svc-update.exe'
 
     Step "B3  Simulated TeamViewer starts (second vendor within 10 minutes)"
     $fakeTv = Join-Path $Dir 'TeamViewer.exe'

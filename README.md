@@ -34,7 +34,7 @@ Windows endpoint                         Wazuh manager
 │ AnyDesk.exe starts    │               │ Default Sysmon rules (61603 / 61650)      │
 │        │              │               │        │                                 │
 │ Sysmon Event 1 / 22   │──── agent ───►│ RMM pack                                 │
-│ (process, DNS query)  │               │   behaviour rules   100900 - 100901      │
+│ (process, DNS query)  │               │   behaviour rules   100900 - 100902      │
 └───────────────────────┘               │   tool started      100910 - 100931      │
                                         │   DNS lookup        100940 - 100959      │
                                         │   correlation       100970 - 100971      │
@@ -56,15 +56,16 @@ Windows endpoint                         Wazuh manager
 
 | Rule ID | Level | Name | Fires when | Why it matters |
 |---|---|---|---|---|
-| 100900 | 12 | Renamed RMM binary | The file's internal name (`OriginalFileName`) is an RMM tool, but it runs under a different file name | Renaming is a deliberate attempt to hide. Legitimate IT rarely does this. Also maps to T1036.003. |
+| 100900 | 12 | Renamed RMM binary (by file name) | The file's internal `OriginalFileName` is an RMM tool, but the file on disk has an unrelated name | Renaming is a deliberate attempt to hide. Legitimate IT rarely does this. Also maps to T1036.003. |
+| 100902 | 12 | Renamed RMM binary (by product) | The file's `Product` is an RMM tool (for example `AnyDesk`), but the file on disk has an unrelated name | Covers tools such as AnyDesk that ship without an `OriginalFileName`. Also maps to T1036.003. |
 | 100901 | 12 | RMM tool launched a shell | An RMM process starts `cmd`, `powershell`, `pwsh`, `wscript`, `cscript`, `mshta`, `rundll32` or `regsvr32` | Hands-on-keyboard activity through a remote tool. Also maps to T1059. |
 | 100910 – 100931 | 8 | RMM tool started | A known RMM executable starts (one rule per vendor) | Baseline visibility: who runs which remote tool, where. |
-| 100940 – 100959 | 6 | DNS lookup to an RMM service | A non-browser process resolves a vendor's service domain | Catches tools by their network behaviour, even with unknown file names. Browsers are excluded so visiting a vendor website does not alert. |
+| 100940 – 100959 | 6 | DNS lookup to an RMM service | A process other than a browser or security agent resolves a vendor's service domain | Catches tools by their network behaviour, even when renamed. Also catches PowerShell downloading an RMM tool. Browsers and security agents (Defender for Endpoint, Defender AV, CrowdStrike, SentinelOne, Elastic, Cortex XDR, Tanium) are excluded, because they resolve domains they observe. |
 | 100970 | 12 | Multiple RMM vendors | RMM tools from **two different vendors** (by signed `Company`) start on the same computer within 10 minutes | Attackers often deploy a second tool as backup access. Rare in normal IT. |
 | 100971 | 10 | Run from a user-writable folder | An RMM tool runs from Downloads, Desktop, Documents, `AppData\Local\Temp`, `C:\Windows\Temp`, `C:\Users\Public` or `C:\Temp` | Portable or dropped copies, typical of social-engineering and intrusion. Installed tools live in Program Files. |
 | 100975 – 100998 | 0 | Allowlist | An approved vendor's "tool started" or "DNS lookup" event | Silences sanctioned tools. Disabled by default. |
 
-**Rule order matters.** Wazuh uses the first matching child rule. The two behaviour rules (100900, 100901) are evaluated before the tool-name rules. Correlation rules (100970, 100971) are children of the tool-started rules, so a single launch produces one alert at the most severe applicable level.
+**Rule order matters.** Wazuh uses the first matching child rule. The behaviour rules (100900 – 100902) are evaluated before the tool-name rules. Correlation rules (100970, 100971) are children of the tool-started rules, so a single launch produces one alert at the most severe applicable level.
 
 **Compliance tags:** every rule carries `tsc_CC6.8`, `tsc_CC7.2` (SOC 2), `nist_800_53_SI.4` and `nist_800_53_CM.7`, so alerts appear in Wazuh's compliance dashboards.
 
@@ -199,7 +200,7 @@ Set-ExecutionPolicy -Scope Process Bypass -Force
 | A1 | Copy of `powershell.exe` named `AnyDesk.exe` runs from `C:\Temp` | 100971 |
 | A2 | That `AnyDesk.exe` launches `cmd.exe` | 100901 |
 | B1 | Official AnyDesk portable runs for 25 s and contacts its relays | 100940 (and 100970 or 100971) |
-| B2 | The same AnyDesk renamed to `svc-update.exe` | 100900 |
+| B2 | The same AnyDesk renamed to `svc-update.exe` | 100902 (and 100940 for its relay lookups) |
 | B3 | Copy of `powershell.exe` named `TeamViewer.exe` | 100970 |
 
 Part A uses only Windows' own `powershell.exe`, renamed, so nothing is installed and no remote session is possible. Part B downloads AnyDesk from `download.anydesk.com`, verifies its signature, never accepts a connection, and is deleted at the end.
@@ -225,7 +226,8 @@ rule.groups:rmm_detection
 ## Limitations
 
 - **Windows only** in v0.1. Linux and macOS RMM agents are on the roadmap.
-- **Name-based tool rules (100910 – 100931)** can be bypassed by renaming. Rule 100900 covers renaming for signed binaries whose `OriginalFileName` is preserved. A rebuilt or repacked binary may evade both.
+- **Name-based tool rules (100910 – 100931)** can be bypassed by renaming. Rules 100900 and 100902 catch renamed copies through the file's `OriginalFileName` or `Product` metadata, and the DNS rules still see the tool's traffic. A rebuilt binary with stripped metadata can evade the renamed-binary rules.
+- **Windows paths in Wazuh** are stored with doubled backslashes (`C:\\Temp\\...`). All path rules accept one or more backslashes; keep that in mind when writing your own exceptions.
 - **DNS rules** depend on Sysmon Event 22. They miss DNS-over-HTTPS, hard-coded IPs and self-hosted servers (MeshCentral, Tactical RMM, SimpleHelp, RustDesk with a private relay).
 - **Multiple-vendor correlation (100970)** compares the signed `Company` field. Unsigned tools with an empty `Company` are not counted.
 - **First-match rule evaluation:** if another custom or default rule claims the same Sysmon event first, the pack's rule does not fire for that event.
@@ -254,5 +256,21 @@ sudo bash install.sh --uninstall
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Test results (v0.1.2)
+
+Lab: Wazuh 4.14.10 manager, Windows 11 agent, Sysmon 15.22, Microsoft Defender for Endpoint active.
+
+| Rule | Result |
+|---|---|
+| 100901 RMM tool launched a shell | Fired |
+| 100902 Renamed AnyDesk (`svc-update.exe`) | Fixed in v0.1.2 (AnyDesk has no `OriginalFileName`) |
+| 100910 / 100911 Tool started | Fired |
+| 100940 DNS lookup to AnyDesk relays | Fired, including from the renamed copy |
+| 100970 Different vendors on one PC | Fired |
+| 100971 Run from user-writable folder | Fixed in v0.1.2 (doubled backslashes in Wazuh paths) |
+| Defender for Endpoint `MsSense.exe` lookups | False positive fixed in v0.1.2 |
+
+---
 
 Built by [Hamza Jameel](https://dshamzaj.github.io), Wazuh Ambassador.
