@@ -1,0 +1,204 @@
+<!--
+  Wazuh RMM Abuse Detection Pack - APPROVED TOOLS (allowlist)
+
+  If your organisation officially uses an RMM tool, approve it here so normal
+  IT work does not raise "tool started" or "DNS lookup" alerts for it.
+
+  HOW TO APPROVE A TOOL
+    1. Find the tool below. Each one is wrapped in a comment block.
+    2. Delete the comment start line above the rule and the comment end line below it.
+    3. Check syntax:   sudo /var/ossec/bin/wazuh-analysisd -t
+    4. Apply:          sudo systemctl restart wazuh-manager
+
+  WHAT STAYS ON EVEN FOR APPROVED TOOLS (on purpose)
+    Renamed binaries (100900), a tool launching a shell (100901) and runs from
+    Downloads/Temp/Desktop (100971) are attacker behaviour even with an approved tool.
+-->
+
+<group name="rmm_abuse,rmm_allowlist,">
+
+  <!-- AnyDesk
+  <rule id="100975" level="0">
+    <if_group>rmm_vendor_anydesk</if_group>
+    <description>Approved RMM tool: AnyDesk (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- TeamViewer
+  <rule id="100976" level="0">
+    <if_group>rmm_vendor_teamviewer</if_group>
+    <description>Approved RMM tool: TeamViewer (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- ConnectWise ScreenConnect
+  <rule id="100977" level="0">
+    <if_group>rmm_vendor_screenconnect</if_group>
+    <description>Approved RMM tool: ConnectWise ScreenConnect (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- Atera
+  <rule id="100978" level="0">
+    <if_group>rmm_vendor_atera</if_group>
+    <description>Approved RMM tool: Atera (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- Splashtop
+  <rule id="100979" level="0">
+    <if_group>rmm_vendor_splashtop</if_group>
+    <description>Approved RMM tool: Splashtop (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- RustDesk
+  <rule id="100980" level="0">
+    <if_group>rmm_vendor_rustdesk</if_group>
+    <description>Approved RMM tool: RustDesk (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- LogMeIn
+  <rule id="100981" level="0">
+    <if_group>rmm_vendor_logmein</if_group>
+    <description>Approved RMM tool: LogMeIn (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- NetSupport Manager
+  <rule id="100982" level="0">
+    <if_group>rmm_vendor_netsupport</if_group>
+    <description>Approved RMM tool: NetSupport Manager (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- Ammyy Admin
+  <rule id="100983" level="0">
+    <if_group>rmm_vendor_ammyy</if_group>
+    <description>Approved RMM tool: Ammyy Admin (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- Radmin
+  <rule id="100984" level="0">
+    <if_group>rmm_vendor_radmin</if_group>
+    <description>Approved RMM tool: Radmin (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- UltraViewer
+  <rule id="100985" level="0">
+    <if_group>rmm_vendor_ultraviewer</if_group>
+    <description>Approved RMM tool: UltraViewer (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- Supremo
+  <rule id="100986" level="0">
+    <if_group>rmm_vendor_supremo</if_group>
+    <description>Approved RMM tool: Supremo (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- AeroAdmin
+  <rule id="100987" level="0">
+    <if_group>rmm_vendor_aeroadmin</if_group>
+    <description>Approved RMM tool: AeroAdmin (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- Remote Utilities
+  <rule id="100988" level="0">
+    <if_group>rmm_vendor_remoteutilities</if_group>
+    <description>Approved RMM tool: Remote Utilities (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- MeshCentral
+  <rule id="100989" level="0">
+    <if_group>rmm_vendor_meshcentral</if_group>
+    <description>Approved RMM tool: MeshCentral (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- Tactical RMM
+  <rule id="100990" level="0">
+    <if_group>rmm_vendor_tacticalrmm</if_group>
+    <description>Approved RMM tool: Tactical RMM (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- NinjaOne
+  <rule id="100991" level="0">
+    <if_group>rmm_vendor_ninjaone</if_group>
+    <description>Approved RMM tool: NinjaOne (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- Action1
+  <rule id="100992" level="0">
+    <if_group>rmm_vendor_action1</if_group>
+    <description>Approved RMM tool: Action1 (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- DWService
+  <rule id="100993" level="0">
+    <if_group>rmm_vendor_dwservice</if_group>
+    <description>Approved RMM tool: DWService (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- Chrome Remote Desktop
+  <rule id="100994" level="0">
+    <if_group>rmm_vendor_chromeremote</if_group>
+    <description>Approved RMM tool: Chrome Remote Desktop (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- VNC server
+  <rule id="100995" level="0">
+    <if_group>rmm_vendor_vnc</if_group>
+    <description>Approved RMM tool: VNC server (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- SimpleHelp
+  <rule id="100996" level="0">
+    <if_group>rmm_vendor_simplehelp</if_group>
+    <description>Approved RMM tool: SimpleHelp (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+  <!-- Zoho Assist
+  <rule id="100997" level="0">
+    <if_group>rmm_vendor_zohoassist</if_group>
+    <description>Approved RMM tool: Zoho Assist (allowlisted)</description>
+    <group>rmm_allowed,</group>
+  </rule>
+  -->
+
+</group>

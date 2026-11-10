@@ -1,0 +1,511 @@
+<!--
+  Wazuh RMM Abuse Detection Pack  v0.1
+  Detects remote monitoring and management (RMM) / remote access tools on Windows
+  using Sysmon Event IDs 1 (process creation) and 22 (DNS query).
+  MITRE ATT&amp;CK: T1219 Remote Access Software
+  Requires: Sysmon on the endpoint and the Wazuh agent collecting
+            Microsoft-Windows-Sysmon/Operational.
+  Rule IDs: 100900 - 100999
+  Independent community project. Not affiliated with or endorsed by Wazuh, Inc.
+-->
+
+<group name="rmm_abuse,windows,sysmon,tsc_CC6.8,tsc_CC7.2,nist_800_53_SI.4,nist_800_53_CM.7,">
+
+  <!-- 1. HIGH-CONFIDENCE BEHAVIOUR (placed before the tool-name rules) -->
+
+  <!-- Renamed RMM binary: internal file name is an RMM tool, but it runs under another name -->
+  <rule id="100900" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.originalFileName" type="pcre2">(?i)^(anydesk|(teamviewer|teamviewer_service|tv_w32|tv_x64)|screenconnect\.[a-z.]+|ateraagent|(srservice|srmanager|srapp|strwinclt)|rustdesk|(logmein|lmiguardiansvc|logmeinsystray)|client32|aa_v\d+|(rserver3|radmin)|(ultraviewer_desktop|ultraviewer_service)|(supremo|supremoservice|supremohelper)|aeroadmin|(rutserv|rfusclient|rutview)|meshagent|tacticalrmm|ninjarmmagent|action1_agent|(dwagent|dwagsvc)|remoting_host|(tvnserver|winvnc|vncserver)|(simplehelpcustomer|simpleservice))\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(anydesk|(teamviewer|teamviewer_service|tv_w32|tv_x64)|screenconnect\.[a-z.]+|ateraagent|(srservice|srmanager|srapp|strwinclt)|rustdesk|(logmein|lmiguardiansvc|logmeinsystray)|client32|aa_v\d+|(rserver3|radmin)|(ultraviewer_desktop|ultraviewer_service)|(supremo|supremoservice|supremohelper)|aeroadmin|(rutserv|rfusclient|rutview)|meshagent|tacticalrmm|ninjarmmagent|action1_agent|(dwagent|dwagsvc)|remoting_host|(tvnserver|winvnc|vncserver)|(simplehelpcustomer|simpleservice))\.exe$</field>
+    <description>RMM abuse: renamed remote access tool. $(win.eventdata.originalFileName) is running as $(win.eventdata.image) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+      <id>T1036.003</id>
+    </mitre>
+    <group>rmm_detection,rmm_renamed,</group>
+  </rule>
+
+  <!-- RMM tool launched a command shell or script host -->
+  <rule id="100901" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.parentImage" type="pcre2">(?i)\\(anydesk|(teamviewer|teamviewer_service|tv_w32|tv_x64)|screenconnect\.[a-z.]+|ateraagent|(srservice|srmanager|srapp|strwinclt)|rustdesk|(logmein|lmiguardiansvc|logmeinsystray)|client32|aa_v\d+|(rserver3|radmin)|(ultraviewer_desktop|ultraviewer_service)|(supremo|supremoservice|supremohelper)|aeroadmin|(rutserv|rfusclient|rutview)|meshagent|tacticalrmm|ninjarmmagent|action1_agent|(dwagent|dwagsvc)|remoting_host|(tvnserver|winvnc|vncserver)|(simplehelpcustomer|simpleservice))\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(cmd|powershell|pwsh|wscript|cscript|mshta|rundll32|regsvr32)\.exe$</field>
+    <description>RMM abuse: $(win.eventdata.parentImage) launched $(win.eventdata.image) on $(win.system.computer). Command: $(win.eventdata.commandLine)</description>
+    <mitre>
+      <id>T1219</id>
+      <id>T1059</id>
+    </mitre>
+    <group>rmm_detection,rmm_shell,</group>
+  </rule>
+
+  <!-- 2. TOOL STARTED (Sysmon Event ID 1) -->
+
+  <rule id="100910" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\anydesk\.exe$</field>
+    <description>RMM tool started: AnyDesk ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_anydesk,</group>
+  </rule>
+
+  <rule id="100911" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(teamviewer|teamviewer_service|tv_w32|tv_x64)\.exe$</field>
+    <description>RMM tool started: TeamViewer ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_teamviewer,</group>
+  </rule>
+
+  <rule id="100912" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\screenconnect\.[a-z.]+\.exe$</field>
+    <description>RMM tool started: ConnectWise ScreenConnect ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_screenconnect,</group>
+  </rule>
+
+  <rule id="100913" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\ateraagent\.exe$</field>
+    <description>RMM tool started: Atera ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_atera,</group>
+  </rule>
+
+  <rule id="100914" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(srservice|srmanager|srapp|strwinclt)\.exe$</field>
+    <description>RMM tool started: Splashtop ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_splashtop,</group>
+  </rule>
+
+  <rule id="100915" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\rustdesk\.exe$</field>
+    <description>RMM tool started: RustDesk ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_rustdesk,</group>
+  </rule>
+
+  <rule id="100916" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(logmein|lmiguardiansvc|logmeinsystray)\.exe$</field>
+    <description>RMM tool started: LogMeIn ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_logmein,</group>
+  </rule>
+
+  <rule id="100917" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\client32\.exe$</field>
+    <description>RMM tool started: NetSupport Manager ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_netsupport,</group>
+  </rule>
+
+  <rule id="100918" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\aa_v\d+\.exe$</field>
+    <description>RMM tool started: Ammyy Admin ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_ammyy,</group>
+  </rule>
+
+  <rule id="100919" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(rserver3|radmin)\.exe$</field>
+    <description>RMM tool started: Radmin ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_radmin,</group>
+  </rule>
+
+  <rule id="100920" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(ultraviewer_desktop|ultraviewer_service)\.exe$</field>
+    <description>RMM tool started: UltraViewer ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_ultraviewer,</group>
+  </rule>
+
+  <rule id="100921" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(supremo|supremoservice|supremohelper)\.exe$</field>
+    <description>RMM tool started: Supremo ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_supremo,</group>
+  </rule>
+
+  <rule id="100922" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\aeroadmin\.exe$</field>
+    <description>RMM tool started: AeroAdmin ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_aeroadmin,</group>
+  </rule>
+
+  <rule id="100923" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(rutserv|rfusclient|rutview)\.exe$</field>
+    <description>RMM tool started: Remote Utilities ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_remoteutilities,</group>
+  </rule>
+
+  <rule id="100924" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\meshagent\.exe$</field>
+    <description>RMM tool started: MeshCentral ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_meshcentral,</group>
+  </rule>
+
+  <rule id="100925" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\tacticalrmm\.exe$</field>
+    <description>RMM tool started: Tactical RMM ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_tacticalrmm,</group>
+  </rule>
+
+  <rule id="100926" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\ninjarmmagent\.exe$</field>
+    <description>RMM tool started: NinjaOne ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_ninjaone,</group>
+  </rule>
+
+  <rule id="100927" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\action1_agent\.exe$</field>
+    <description>RMM tool started: Action1 ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_action1,</group>
+  </rule>
+
+  <rule id="100928" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(dwagent|dwagsvc)\.exe$</field>
+    <description>RMM tool started: DWService ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_dwservice,</group>
+  </rule>
+
+  <rule id="100929" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\remoting_host\.exe$</field>
+    <description>RMM tool started: Chrome Remote Desktop ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_chromeremote,</group>
+  </rule>
+
+  <rule id="100930" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(tvnserver|winvnc|vncserver)\.exe$</field>
+    <description>RMM tool started: VNC server ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_vnc,</group>
+  </rule>
+
+  <rule id="100931" level="8">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(simplehelpcustomer|simpleservice)\.exe$</field>
+    <description>RMM tool started: SimpleHelp ($(win.eventdata.image)) by $(win.eventdata.user) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_process,rmm_vendor_simplehelp,</group>
+  </rule>
+
+  <!-- 3. DNS LOOKUP TO AN RMM SERVICE (Sysmon Event ID 22). Browsers are excluded. -->
+
+  <rule id="100940" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)anydesk\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up AnyDesk service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_anydesk,</group>
+  </rule>
+
+  <rule id="100941" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)teamviewer\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up TeamViewer service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_teamviewer,</group>
+  </rule>
+
+  <rule id="100942" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)screenconnect\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up ConnectWise ScreenConnect service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_screenconnect,</group>
+  </rule>
+
+  <rule id="100943" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)atera\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up Atera service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_atera,</group>
+  </rule>
+
+  <rule id="100944" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)splashtop\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up Splashtop service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_splashtop,</group>
+  </rule>
+
+  <rule id="100945" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)rustdesk\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up RustDesk service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_rustdesk,</group>
+  </rule>
+
+  <rule id="100946" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)(logmein\.com|logme\.in|logmeinrescue\.com)$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up LogMeIn service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_logmein,</group>
+  </rule>
+
+  <rule id="100947" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)netsupportsoftware\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up NetSupport Manager service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_netsupport,</group>
+  </rule>
+
+  <rule id="100948" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)ammyy\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up Ammyy Admin service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_ammyy,</group>
+  </rule>
+
+  <rule id="100949" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)radmin\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up Radmin service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_radmin,</group>
+  </rule>
+
+  <rule id="100950" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)ultraviewer\.net$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up UltraViewer service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_ultraviewer,</group>
+  </rule>
+
+  <rule id="100951" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)supremocontrol\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up Supremo service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_supremo,</group>
+  </rule>
+
+  <rule id="100952" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)aeroadmin\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up AeroAdmin service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_aeroadmin,</group>
+  </rule>
+
+  <rule id="100953" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)remoteutilities\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up Remote Utilities service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_remoteutilities,</group>
+  </rule>
+
+  <rule id="100954" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)meshcentral\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up MeshCentral service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_meshcentral,</group>
+  </rule>
+
+  <rule id="100955" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)(ninjarmm\.com|ninjaone\.com)$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up NinjaOne service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_ninjaone,</group>
+  </rule>
+
+  <rule id="100956" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)action1\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up Action1 service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_action1,</group>
+  </rule>
+
+  <rule id="100957" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)dwservice\.net$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up DWService service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_dwservice,</group>
+  </rule>
+
+  <rule id="100958" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)^remotedesktop\.google\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up Chrome Remote Desktop service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_chromeremote,</group>
+  </rule>
+
+  <rule id="100959" level="6">
+    <if_group>sysmon_event_22</if_group>
+    <field name="win.eventdata.queryName" type="pcre2">(?i)(^|\.)zohoassist\.com$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)\\(chrome|msedge|firefox|brave|opera|iexplore|msedgewebview2)\.exe$</field>
+    <description>RMM network activity: $(win.eventdata.image) looked up Zoho Assist service $(win.eventdata.queryName) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_dns,rmm_vendor_zohoassist,</group>
+  </rule>
+
+  <!-- 4. CORRELATION (evaluated after a tool-started rule matches) -->
+
+  <!-- Two or more different RMM vendors started on the same machine within 10 minutes -->
+  <rule id="100970" level="12" frequency="2" timeframe="600">
+    <if_matched_group>rmm_process</if_matched_group>
+    <same_field>win.system.computer</same_field>
+    <different_field>win.eventdata.company</different_field>
+    <description>RMM abuse: remote access tools from different vendors started on $(win.system.computer) within 10 minutes</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_multi_vendor,</group>
+  </rule>
+
+  <!-- RMM tool started from a user-writable folder (portable or dropped copy) -->
+  <rule id="100971" level="10">
+    <if_group>rmm_process</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)(\\Users\\[^\\]+\\(Downloads|Desktop|Documents|AppData\\Local\\Temp)\\|\\Windows\\Temp\\|\\Users\\Public\\|^[a-z]:\\(Temp|tmp)\\)</field>
+    <description>RMM abuse: remote access tool run from a user-writable folder: $(win.eventdata.image) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_portable,</group>
+  </rule>
+
+</group>
