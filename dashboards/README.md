@@ -8,7 +8,7 @@ One file, `rmm-abuse-dashboard.ndjson`, with a ready-made Wazuh dashboard for th
 |---|---|
 | Guide | What each alert level means |
 | Total alerts, Critical alerts, Affected hosts, Distinct executables | Headline numbers. Critical turns red when above zero. |
-| Alerts by detection | Renamed tool, tool opened a shell, multiple vendors, run from user folder, tool started, DNS lookup |
+| Alerts by detection | Renamed (12), opened shell (12), multi-vendor (12), user folder (10), tool started (8), DNS lookup (6) |
 | Tools seen (vendor) | Which RMM vendors were detected (allowlisted tools do not appear) |
 | Alerts over time by detection | Timeline, stacked by detection type |
 | Hosts | Alert count and highest level per computer |

@@ -6,6 +6,8 @@ Attackers increasingly install legitimate remote monitoring and management (RMM)
 
 Wazuh's default ruleset has no coverage for these tools. This pack adds it: tool-launch detection, DNS lookups to RMM services, and high-confidence behaviour rules for renamed binaries, shells spawned by RMM tools and multiple vendors on one machine. An allowlist keeps your organisation's approved RMM tool quiet.
 
+![RMM Abuse Detection dashboard in Wazuh](docs/dashboard.png)
+
 > **Disclaimer:** This is an independent community project. It is not affiliated with, endorsed by, or supported by Wazuh, Inc. "Wazuh" is a trademark of Wazuh, Inc.
 
 ---
@@ -18,10 +20,12 @@ Wazuh's default ruleset has no coverage for these tools. This pack adds it: tool
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Approving your organisation's RMM tool](#approving-your-organisations-rmm-tool)
+- [Dashboard](#dashboard)
 - [Testing](#testing)
 - [SOC workflow: triaging an alert](#soc-workflow-triaging-an-alert)
 - [Limitations](#limitations)
 - [Uninstall](#uninstall)
+- [Repository layout](#repository-layout)
 - [Roadmap](#roadmap)
 
 ---
@@ -185,6 +189,18 @@ TeamViewer launches and DNS lookups no longer alert. **These still alert, by des
 
 ---
 
+## Dashboard
+
+A ready-made Wazuh dashboard is included in [`dashboards/`](dashboards/).
+
+1. Wazuh dashboard → ☰ → **Dashboard management** → **Dashboards Management** → **Saved objects** → **Import**.
+2. Choose `dashboards/rmm-abuse-dashboard.ndjson` and click **Import**.
+3. Open ☰ → **Dashboards** → **RMM Abuse Detection**.
+
+It shows headline counts (total, critical, affected hosts, distinct executables), alerts by detection type and by vendor, a timeline, and tables of hosts, executables and users, domains contacted and the latest alerts. See [`dashboards/README.md`](dashboards/README.md) for troubleshooting.
+
+---
+
 ## Testing
 
 `tests/Invoke-RmmSimulation.ps1` triggers the detections safely on a Windows agent. Run it in PowerShell as Administrator:
@@ -210,6 +226,8 @@ In the Wazuh dashboard, open **Threat Hunting** and search:
 ```
 rule.groups:rmm_detection
 ```
+
+![RMM alerts in Wazuh Threat Hunting](docs/alerts.png)
 
 ---
 
@@ -243,12 +261,33 @@ sudo bash install.sh --uninstall
 
 ---
 
+## Repository layout
+
+```
+wazuh-rmm-abuse-detection/
+├── rules/
+│   ├── rmm_abuse_rules.xml        detection rules (100900 - 100971)
+│   └── rmm_allowlist.xml          approved tools (100975 - 100998), all off by default
+├── dashboards/
+│   ├── rmm-abuse-dashboard.ndjson Wazuh dashboard (saved objects)
+│   └── README.md                  import and troubleshooting
+├── tests/
+│   ├── Install-Sysmon-Wazuh.ps1   lab Sysmon install + agent config
+│   └── Invoke-RmmSimulation.ps1   safe end-to-end detection test
+├── docs/                          screenshots
+├── install.sh                     manager installer with validation and rollback
+├── CHANGELOG.md
+├── LICENSE
+└── README.md
+```
+
+---
+
 ## Roadmap
 
 - Linux and macOS RMM agents (auditd / Endpoint Security)
 - Sysmon Event ID 3 network rules for tools with fixed IP ranges
 - Service-installation detection (Windows Event 7045) for RMM agents installed as services
-- Dashboard: RMM activity by host, vendor and user
 - Saudi NCA ECC control mapping, aligned with the [Wazuh NCA ECC compliance pack](https://github.com/DShamzaj/wazuh-nca-ecc-compliance)
 
 ---
