@@ -61,7 +61,7 @@ systemctl is-active --quiet wazuh-manager || fail "wazuh-manager did not start. 
 ok "
 RMM Abuse Detection Pack installed.
   Rules:     $RULES_DIR/rmm_abuse_rules.xml   (IDs 100900-100971)
-  Allowlist: $RULES_DIR/rmm_allowlist.xml     (IDs 100975-100997)
+  Allowlist: $RULES_DIR/rmm_allowlist.xml     (IDs 100975-100998)
   Backup:    $BACKUP
 
 Next: run tests/Invoke-RmmSimulation.ps1 on a Windows agent, then search the

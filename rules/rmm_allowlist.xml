@@ -17,6 +17,13 @@
 
 <group name="rmm_abuse,rmm_allowlist,">
 
+  <!-- Placeholder: Wazuh needs at least one active rule in this file. It never matches. Do not remove. -->
+  <rule id="100998" level="0">
+    <if_group>rmm_process</if_group>
+    <field name="win.eventdata.image">^RMM_ALLOWLIST_PLACEHOLDER_NEVER_MATCHES$</field>
+    <description>RMM allowlist placeholder (never matches)</description>
+  </rule>
+
   <!-- AnyDesk
   <rule id="100975" level="0">
     <if_group>rmm_vendor_anydesk</if_group>

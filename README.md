@@ -38,7 +38,7 @@ Windows endpoint                         Wazuh manager
 └───────────────────────┘               │   tool started      100910 - 100931      │
                                         │   DNS lookup        100940 - 100959      │
                                         │   correlation       100970 - 100971      │
-                                        │   allowlist         100975 - 100997      │
+                                        │   allowlist         100975 - 100998      │
                                         │        │                                 │
                                         │        ▼                                 │
                                         │ Alert in wazuh-alerts-* (MITRE T1219)    │
@@ -62,7 +62,7 @@ Windows endpoint                         Wazuh manager
 | 100940 – 100959 | 6 | DNS lookup to an RMM service | A non-browser process resolves a vendor's service domain | Catches tools by their network behaviour, even with unknown file names. Browsers are excluded so visiting a vendor website does not alert. |
 | 100970 | 12 | Multiple RMM vendors | RMM tools from **two different vendors** (by signed `Company`) start on the same computer within 10 minutes | Attackers often deploy a second tool as backup access. Rare in normal IT. |
 | 100971 | 10 | Run from a user-writable folder | An RMM tool runs from Downloads, Desktop, Documents, `AppData\Local\Temp`, `C:\Windows\Temp`, `C:\Users\Public` or `C:\Temp` | Portable or dropped copies, typical of social-engineering and intrusion. Installed tools live in Program Files. |
-| 100975 – 100997 | 0 | Allowlist | An approved vendor's "tool started" or "DNS lookup" event | Silences sanctioned tools. Disabled by default. |
+| 100975 – 100998 | 0 | Allowlist | An approved vendor's "tool started" or "DNS lookup" event | Silences sanctioned tools. Disabled by default. |
 
 **Rule order matters.** Wazuh uses the first matching child rule. The two behaviour rules (100900, 100901) are evaluated before the tool-name rules. Correlation rules (100970, 100971) are children of the tool-started rules, so a single launch produces one alert at the most severe applicable level.
 
