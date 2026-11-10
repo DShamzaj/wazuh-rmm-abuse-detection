@@ -13,9 +13,9 @@
   Part B (only with -IncludeRealAnyDesk):
     Downloads the official AnyDesk portable client from download.anydesk.com,
     runs it briefly, then closes it. No connection is accepted.
-      B1  Real AnyDesk runs and contacts its relays -> 100910 / 100971 and 100940 DNS lookup
+      B1  Real AnyDesk runs and contacts its relays -> 100970 different vendors and 100940 DNS lookup
       B2  The same file renamed to svc-update.exe   -> 100902 renamed remote access tool
-      B3  A simulated TeamViewer starts right after -> 100970 different vendors within 10 minutes
+      B3  A simulated TeamViewer starts right after -> 100971 (same Microsoft company as step A, so not a new vendor)
 
   Everything is cleaned up at the end.
 
@@ -68,6 +68,7 @@ if ($IncludeRealAnyDesk) {
     Start-Sleep -Seconds 25
     Get-Process -Name AnyDesk -ErrorAction SilentlyContinue | Stop-Process -Force
     Expect 100940 'RMM network activity: ...looked up AnyDesk service ...anydesk.com'
+    Expect 100970 'RMM abuse: remote access tools from different vendors started on <this PC> within 10 minutes (real AnyDesk after the simulated one)'
 
     Step "B2  Running the same AnyDesk renamed to svc-update.exe"
     $renamed = Join-Path $Dir 'svc-update.exe'
@@ -81,7 +82,7 @@ if ($IncludeRealAnyDesk) {
     $fakeTv = Join-Path $Dir 'TeamViewer.exe'
     Copy-Item $Ps $fakeTv -Force
     & $fakeTv -NoProfile -Command "Start-Sleep -Seconds 1" | Out-Null
-    Expect 100970 'RMM abuse: remote access tools from different vendors started on <this PC> within 10 minutes'
+    Expect 100971 'Simulated TeamViewer from C:\Temp (shares the Microsoft company with step A, so it is not a new vendor)'
 }
 
 # ---------------- Cleanup ----------------

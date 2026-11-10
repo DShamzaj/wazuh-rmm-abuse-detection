@@ -1,5 +1,5 @@
 <!--
-  Wazuh RMM Abuse Detection Pack  v0.1
+  Wazuh RMM Abuse Detection Pack  v1.0.0
   Detects remote monitoring and management (RMM) / remote access tools on Windows
   using Sysmon Event IDs 1 (process creation) and 22 (DNS query).
   MITRE ATT&amp;CK: T1219 Remote Access Software

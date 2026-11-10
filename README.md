@@ -199,9 +199,9 @@ Set-ExecutionPolicy -Scope Process Bypass -Force
 |---|---|---|
 | A1 | Copy of `powershell.exe` named `AnyDesk.exe` runs from `C:\Temp` | 100971 |
 | A2 | That `AnyDesk.exe` launches `cmd.exe` | 100901 |
-| B1 | Official AnyDesk portable runs for 25 s and contacts its relays | 100940 (and 100970 or 100971) |
+| B1 | Official AnyDesk portable runs for 25 s and contacts its relays | 100940 and 100970 (a second vendor after the simulated AnyDesk) |
 | B2 | The same AnyDesk renamed to `svc-update.exe` | 100902 (and 100940 for its relay lookups) |
-| B3 | Copy of `powershell.exe` named `TeamViewer.exe` | 100970 |
+| B3 | Copy of `powershell.exe` named `TeamViewer.exe` | 100971. It is not counted as a new vendor because, as a PowerShell copy, it carries the same `Microsoft` company as step A. A real TeamViewer would raise 100970. |
 
 Part A uses only Windows' own `powershell.exe`, renamed, so nothing is installed and no remote session is possible. Part B downloads AnyDesk from `download.anydesk.com`, verifies its signature, never accepts a connection, and is deleted at the end.
 
@@ -257,19 +257,20 @@ sudo bash install.sh --uninstall
 
 MIT. See [LICENSE](LICENSE).
 
-## Test results (v0.1.4)
+## Test results (v1.0.0)
 
-Lab: Wazuh 4.14.10 manager, Windows 11 agent, Sysmon 15.22, Microsoft Defender for Endpoint active.
+Lab: Wazuh 4.14.10 manager, Windows 11 agent, Sysmon 15.22, Microsoft Defender for Endpoint active. Full run of `Invoke-RmmSimulation.ps1 -IncludeRealAnyDesk`.
 
-| Rule | Result |
-|---|---|
-| 100901 RMM tool launched a shell | Fired |
-| 100902 Renamed AnyDesk (`svc-update.exe`) | Fixed in v0.1.2 (AnyDesk has no `OriginalFileName`) |
-| 100910 / 100911 Tool started | Fired |
-| 100940 DNS lookup to AnyDesk relays | Fired, including from the renamed copy |
-| 100970 Different vendors on one PC | Fixed in v0.1.4 (rule order: correlation rule moved below the folder rule) |
-| 100971 Run from user-writable folder | Fixed in v0.1.2 (doubled backslashes in Wazuh paths) |
-| Defender for Endpoint `MsSense.exe` lookups | False positive fixed in v0.1.2 |
+| Rule | Scenario | Alerts | Result |
+|---|---|---|---|
+| 100901 | Simulated AnyDesk launches `cmd.exe` | 1 | Pass |
+| 100902 | Real AnyDesk renamed to `svc-update.exe` | 3 | Pass |
+| 100940 | AnyDesk relay lookups, including from the renamed copy | 5 | Pass |
+| 100970 | Real AnyDesk on a host that already ran another vendor's tool | 3 | Pass |
+| 100971 | Remote access tools run from `C:\Temp` | 3 | Pass |
+| – | Defender for Endpoint (`MsSense.exe`) DNS lookups | 0 | Pass (no false positives) |
+
+Issues found and fixed during testing: AnyDesk ships without an `OriginalFileName` (added product-based rule 100902), Wazuh stores Windows paths with doubled backslashes (path rules accept one or more), security agents resolve domains they observe (excluded from DNS rules), and `if_matched_group` only links to rules loaded earlier (correlation rule placed last).
 
 ---
 
