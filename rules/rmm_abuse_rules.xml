@@ -498,18 +498,6 @@
 
   <!-- 4. CORRELATION (evaluated after a tool-started rule matches) -->
 
-  <!-- Two or more different RMM vendors started on the same machine within 10 minutes -->
-  <rule id="100970" level="12" frequency="2" timeframe="600">
-    <if_matched_group>rmm_process</if_matched_group>
-    <same_field>win.system.computer</same_field>
-    <different_field>win.eventdata.company</different_field>
-    <description>RMM abuse: remote access tools from different vendors started on $(win.system.computer) within 10 minutes</description>
-    <mitre>
-      <id>T1219</id>
-    </mitre>
-    <group>rmm_detection,rmm_multi_vendor,</group>
-  </rule>
-
   <!-- RMM tool started from a user-writable folder (portable or dropped copy) -->
   <rule id="100971" level="10">
     <if_group>rmm_process</if_group>
@@ -519,6 +507,20 @@
       <id>T1219</id>
     </mitre>
     <group>rmm_detection,rmm_process,rmm_portable,</group>
+  </rule>
+
+  <!-- Two or more different RMM vendors started on the same machine within 10 minutes.
+       Must stay BELOW every rule in the rmm_process group: Wazuh links an if_matched_group
+       rule only to rules loaded before it. -->
+  <rule id="100970" level="12" frequency="2" timeframe="600">
+    <if_matched_group>rmm_process</if_matched_group>
+    <same_field>win.system.computer</same_field>
+    <different_field>win.eventdata.company</different_field>
+    <description>RMM abuse: remote access tools from different vendors started on $(win.system.computer) within 10 minutes</description>
+    <mitre>
+      <id>T1219</id>
+    </mitre>
+    <group>rmm_detection,rmm_multi_vendor,</group>
   </rule>
 
 </group>
