@@ -518,7 +518,7 @@
     <mitre>
       <id>T1219</id>
     </mitre>
-    <group>rmm_detection,rmm_portable,</group>
+    <group>rmm_detection,rmm_process,rmm_portable,</group>
   </rule>
 
 </group>

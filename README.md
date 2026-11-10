@@ -65,7 +65,7 @@ Windows endpoint                         Wazuh manager
 | 100971 | 10 | Run from a user-writable folder | An RMM tool runs from Downloads, Desktop, Documents, `AppData\Local\Temp`, `C:\Windows\Temp`, `C:\Users\Public` or `C:\Temp` | Portable or dropped copies, typical of social-engineering and intrusion. Installed tools live in Program Files. |
 | 100975 – 100998 | 0 | Allowlist | An approved vendor's "tool started" or "DNS lookup" event | Silences sanctioned tools. Disabled by default. |
 
-**Rule order matters.** Wazuh uses the first matching child rule. The behaviour rules (100900 – 100902) are evaluated before the tool-name rules. Correlation rules (100970, 100971) are children of the tool-started rules, so a single launch produces one alert at the most severe applicable level.
+**Rule order matters.** Wazuh uses the first matching child rule. The behaviour rules (100900 – 100902) are evaluated before the tool-name rules. Correlation rules (100970, 100971) are children of the tool-started rules, so a single launch produces one alert at the most severe applicable level. Rule 100971 keeps the `rmm_process` group so launches from user folders still count towards the multiple-vendor correlation (100970).
 
 **Compliance tags:** every rule carries `tsc_CC6.8`, `tsc_CC7.2` (SOC 2), `nist_800_53_SI.4` and `nist_800_53_CM.7`, so alerts appear in Wazuh's compliance dashboards.
 
@@ -257,7 +257,7 @@ sudo bash install.sh --uninstall
 
 MIT. See [LICENSE](LICENSE).
 
-## Test results (v0.1.2)
+## Test results (v0.1.3)
 
 Lab: Wazuh 4.14.10 manager, Windows 11 agent, Sysmon 15.22, Microsoft Defender for Endpoint active.
 
@@ -267,7 +267,7 @@ Lab: Wazuh 4.14.10 manager, Windows 11 agent, Sysmon 15.22, Microsoft Defender f
 | 100902 Renamed AnyDesk (`svc-update.exe`) | Fixed in v0.1.2 (AnyDesk has no `OriginalFileName`) |
 | 100910 / 100911 Tool started | Fired |
 | 100940 DNS lookup to AnyDesk relays | Fired, including from the renamed copy |
-| 100970 Different vendors on one PC | Fired |
+| 100970 Different vendors on one PC | Fixed in v0.1.3 (launches from user folders now count towards the correlation) |
 | 100971 Run from user-writable folder | Fixed in v0.1.2 (doubled backslashes in Wazuh paths) |
 | Defender for Endpoint `MsSense.exe` lookups | False positive fixed in v0.1.2 |
 
